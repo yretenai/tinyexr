@@ -1,7 +1,7 @@
 project('tinyexr', ['cpp', 'c'],
 	license : 'MIT',
 	meson_version : '>=1.2.0',
-	version : '__PV__',
+	version : '1.0.10',
 	default_options : [
 		'cpp_std=c++11',
 		'c_std=c11',
@@ -74,7 +74,6 @@ tinyexr_dep = declare_dependency(link_with : tinyexr_lib, include_directories : 
 
 install_headers('tinyexr.h')
 
-
 import('pkgconfig').generate(
 	tinyexr_lib,
 	description : 'Tiny OpenEXR image loader/saver library',
@@ -85,61 +84,64 @@ import('pkgconfig').generate(
 if get_option('build_examples')
 	cxxopts = dependency('cxxopts', required: true)
 	stb = dependency('stb', required: true)
-	
-	executable('exrcube2longlat', ['examples/cube2longlat/cube2longlat.cc'], 
+
+	executable('exrcube2longlat', ['examples/cube2longlat/cube2longlat.cc'],
 		dependencies : [tinyexr_dep, cxxopts, stb],
 		install : true)
 
-	executable('exr2fptiff', ['examples/exr2fptiff/exr2fptiff.cc'], 
+	executable('exr2fptiff', ['examples/exr2fptiff/exr2fptiff.cc'],
 		dependencies : [tinyexr_dep, cxxopts, stb],
 		install : true)
 
-	executable('exr2ldr', ['examples/exr2ldr/exr2ldr.cc'], 
+	executable('exr2ldr', ['examples/exr2ldr/exr2ldr.cc'],
 		dependencies : [tinyexr_dep, cxxopts, stb],
 		install : true)
 
-	executable('ldr2exr', ['examples/ldr2exr/ldr2exr.cc'], 
+	executable('ldr2exr', ['examples/ldr2exr/ldr2exr.cc'],
 		dependencies : [tinyexr_dep, cxxopts, stb],
 		install : true)
 
-	executable('exr2rgbe', ['examples/exr2rgbe/exr2rgbe.cc'], 
+	executable('exr2rgbe', ['examples/exr2rgbe/exr2rgbe.cc'],
 		dependencies : [tinyexr_dep, cxxopts, stb],
 		install : true)
 
-	executable('rgbe2exr', ['examples/rgbe2exr/rgbe2exr.cc'], 
+	executable('rgbe2exr', ['examples/rgbe2exr/rgbe2exr.cc'],
 		dependencies : [tinyexr_dep, cxxopts, stb],
 		install : true)
 
-	executable('exrfilter', ['examples/exrfilter/exrfilter.cc'], 
+	executable('exrfilter', ['examples/exrfilter/exrfilter.cc'],
 		dependencies : [tinyexr_dep, cxxopts, stb],
 		install : true)
 
-	executable('exrnormalmap', ['examples/nornalmap/main.cc'], 
-		dependencies : [tinyexr_dep, cxxopts, stb, miniz],
-		install : true)
+	if miniz.found()
+		executable('exrnormalmap', ['examples/nornalmap/main.cc'],
+			dependencies : [tinyexr_dep, cxxopts, stb, miniz],
+			install : true)
 
-	executable('exrresize', ['examples/resize/resize.cc'], 
-		dependencies : [tinyexr_dep, cxxopts, stb, miniz],
-		install : true)
+		executable('exrresize', ['examples/resize/resize.cc'],
+			dependencies : [tinyexr_dep, cxxopts, stb, miniz],
+			install : true)
 
-	executable('exrmapgen', ['examples/testmapgen/testmapgen.cc'], 
-		dependencies : [tinyexr_dep, cxxopts, stb, miniz],
-		install : true)
-	
-	glut = dependency('glut',required: false)
-	glu = dependency('glu', required: false)
-	gl = dependency('gl', required: false)
-	if glut.found() and glu.found() and gl.found() and get_option('build_gl_examples')
-		executable('exrdeepview', ['examples/deepview/main.cc', 'examples/deepview/trackball.cc'], 
+		executable('exrmapgen', ['examples/testmapgen/testmapgen.cc'],
+			dependencies : [tinyexr_dep, cxxopts, stb, miniz],
+			install : true)
+	endif
+
+	if get_option('build_gl_examples')
+		glut = dependency('glut',required: true)
+		glu = dependency('glu', required: true)
+		gl = dependency('gl', required: true)
+
+		executable('exrdeepview', ['examples/deepview/main.cc', 'examples/deepview/trackball.cc'],
 			dependencies : [tinyexr_dep, glut, glu, gl, cxxopts, stb, miniz],
 			install : true)
 
-		threads = dependency('threads', required: false)
-		x11 = dependency('X11', required: false)
-		dl = dependency('dl', required: false)
-		glew = dependency('glew', required: false)
+		if get_option('build_exrview')
+			threads = dependency('threads', required: true)
+			x11 = dependency('X11', required: true)
+			dl = dependency('dl', required: true)
+			glew = dependency('glew', required: true)
 
-		if threads.found() and x11.found() and dl.found() and glew.found() and get_option('build_exrview')
 			exrview_src = []
 			exrview_lib = []
 			exrview_def = []
@@ -183,7 +185,7 @@ if get_option('build_examples')
 			executable('exrview', [
 				'examples/exrview/main.cc',
 				'examples/exrview/exr-io.cc'
-			] + exrview_src, 
+			] + exrview_src,
 			dependencies: [tinyexr_dep, glut, glu, gl, threads, x11, dl, glew, miniz] + exrview_lib,
 			include_directories : ['examples/exrview/ThirdPartyLibs/nativefiledialog/src/include'],
 			cpp_args: exrview_def,
