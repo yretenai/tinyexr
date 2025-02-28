@@ -158,6 +158,7 @@ Include `tinyexr.h` with `TINYEXR_IMPLEMENTATION` flag (do this only for **one**
 
 * `TINYEXR_USE_MINIZ` Use miniz (default = 1). Please include `zlib.h` header before `tinyexr.h` if you disable miniz support(e.g. use system's zlib).
 * `TINYEXR_USE_STB_ZLIB` Use zlib from `stb_image[_write].h` instead of miniz or the system's zlib (default = 0).
+* `TINYEXR_USE_ZLIBNG` Use zlibng. Please include `zlib-ng.h` header before `tinyexr.h` if you disable miniz and enable zlib-ng support (default = 0).
 * `TINYEXR_USE_PIZ` Enable PIZ compression support (default = 1)
 * `TINYEXR_USE_ZFP` Enable ZFP compression support (TinyEXR extension, default = 0)
 * `TINYEXR_USE_THREAD` Enable threaded loading/storing using C++11 thread (Requires C++11 compiler, default = 0)

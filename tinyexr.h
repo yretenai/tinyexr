@@ -119,6 +119,11 @@ extern "C" {
 #define TINYEXR_USE_NANOZLIB (0)
 #endif
 
+// Use zlib-ng.
+#ifndef TINYEXR_USE_ZLIBNG
+#define TINYEXR_USE_ZLIBNG (0)
+#endif
+
 // Disable PIZ compression when applying cpplint.
 #ifndef TINYEXR_USE_PIZ
 #define TINYEXR_USE_PIZ (1)
@@ -1468,9 +1473,15 @@ static bool CompressZip(unsigned char *dst,
   
   compressedSize = outSize;
 #else
-  uLong outSize = compressBound(static_cast<uLong>(src_size));
-  int ret = compress(dst, &outSize, static_cast<const Bytef *>(&tmpBuf.at(0)),
-                     src_size);
+  #if defined(TINYEXR_USE_ZLIBNG) && (TINYEXR_USE_ZLIBNG==1)
+    uLong outSize = zng_compressBound(static_cast<uLong>(src_size));
+    int ret = zng_compress(dst, &outSize, static_cast<const Bytef *>(&tmpBuf.at(0)),
+                      src_size);
+  #else
+    uLong outSize = compressBound(static_cast<uLong>(src_size));
+    int ret = compress(dst, &outSize, static_cast<const Bytef *>(&tmpBuf.at(0)),
+                      src_size);
+  #endif
   if (ret != Z_OK) {
     return false;
   }
@@ -1522,7 +1533,11 @@ static bool DecompressZip(unsigned char *dst,
     return false;
   }
 #else
-  int ret = uncompress(&tmpBuf.at(0), uncompressed_size, src, src_size);
+  #if defined(TINYEXR_USE_ZLIBNG) && (TINYEXR_USE_ZLIBNG==1)
+    int ret = zng_uncompress(&tmpBuf.at(0), uncompressed_size, src, src_size);
+  #else
+    int ret = uncompress(&tmpBuf.at(0), uncompressed_size, src, src_size);
+  #endif
   if (Z_OK != ret) {
     return false;
   }
@@ -7206,6 +7221,9 @@ static bool EncodePixelData(/* out */ std::vector<unsigned char>& out_data,
 #elif defined(TINYEXR_USE_NANOZLIB) && (TINYEXR_USE_NANOZLIB == 1)
     std::vector<unsigned char> block(nanoz_compressBound(
       static_cast<unsigned long>(buf.size())));
+#elif defined(TINYEXR_USE_ZLIBNG) && (TINYEXR_USE_ZLIBNG == 1)
+    std::vector<unsigned char> block(
+      zng_compressBound(static_cast<uLong>(buf.size())));
 #else
     std::vector<unsigned char> block(
       compressBound(static_cast<uLong>(buf.size())));
